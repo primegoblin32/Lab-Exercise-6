@@ -10,10 +10,10 @@ import javafx.stage.Stage;
 
 public class Main extends Application {
 
-    private static final int WIDTH = 50;
+    private static final int WIDTH = 40;
     private static final int HEIGHT = 25;
 
-    private Square square = new Square(25, 12, "BLUE", 7);
+    private Square square = new Square(20, 12, "BLUE", 7);
 
     private TextArea drawingArea;
     private TextField sideField;
@@ -34,8 +34,11 @@ public class Main extends Application {
         drawingArea.setEditable(false);
         drawingArea.setWrapText(false);
         drawingArea.setFont(Font.font("Monospaced", 14));
+        drawingArea.setPrefColumnCount(WIDTH * 2);
         drawingArea.setPrefRowCount(HEIGHT);
-        drawingArea.setPrefColumnCount(WIDTH);
+        drawingArea.setMinWidth(0);
+        drawingArea.setMaxWidth(Double.MAX_VALUE);
+        drawingArea.setMaxHeight(Double.MAX_VALUE);
 
         sideField = new TextField("7");
         characterField = new TextField("*");
@@ -94,20 +97,29 @@ public class Main extends Application {
 
         controls.setPadding(new Insets(15));
         controls.setPrefWidth(200);
+        controls.setMinWidth(200);
+
+        drawingArea.setStyle(
+                "-fx-control-inner-background: white;" +
+                        "-fx-font-family: 'Monospaced';" +
+                        "-fx-font-size: 14px;"
+        );
 
         BorderPane root = new BorderPane();
         root.setCenter(drawingArea);
         root.setRight(controls);
         root.setPadding(new Insets(10));
 
-        drawSquare();
-
         Scene scene = new Scene(root, 950, 500);
 
         stage.setTitle("Drawable Shape - Square");
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setResizable(true);
+        stage.setMinWidth(950);
+        stage.setMinHeight(500);
         stage.show();
+
+        updateDisplay();
     }
 
     private void drawSquare() {
@@ -123,16 +135,13 @@ public class Main extends Application {
             square.setSideLength(sideLength);
             square.setCharacter(characterField.getText().charAt(0));
 
-            // Update color by creating a new square.
-            Square updatedSquare = new Square(
+            square = new Square(
                     square.getCenterX(),
                     square.getCenterY(),
                     colorBox.getValue(),
                     square.getSideLength(),
                     square.getCharacter()
             );
-
-            square = updatedSquare;
 
             updateDisplay();
 
@@ -161,7 +170,7 @@ public class Main extends Application {
     }
 
     private void resetSquare() {
-        square = new Square(25, 12, "BLUE", 7);
+        square = new Square(20, 12, "BLUE", 7);
 
         sideField.setText("7");
         characterField.setText("*");
@@ -174,6 +183,7 @@ public class Main extends Application {
     }
 
     private void updateDisplay() {
+
         char[][] canvas = new char[HEIGHT][WIDTH];
 
         for (int row = 0; row < HEIGHT; row++) {
@@ -205,7 +215,18 @@ public class Main extends Application {
 
         StringBuilder output = new StringBuilder();
 
+        int leftPadding = Math.max(0,
+                (int) ((drawingArea.getWidth() / 8.4 - WIDTH * 2) / 2));
+
+        int topPadding = Math.max(0,
+                (int) ((drawingArea.getHeight() / 17 - HEIGHT) / 2));
+
+        output.append("\n".repeat(topPadding));
+
         for (int row = 0; row < HEIGHT; row++) {
+
+            output.append(" ".repeat(leftPadding));
+
             for (int col = 0; col < WIDTH; col++) {
                 output.append(canvas[row][col]).append(' ');
             }
@@ -215,16 +236,15 @@ public class Main extends Application {
 
         drawingArea.setText(output.toString());
 
-        String color = square.getColor().toLowerCase();
-
         drawingArea.setStyle(
                 "-fx-control-inner-background: white;" +
-                        "-fx-text-fill: " + color + ";" +
+                        "-fx-text-fill: " + square.getColor().toLowerCase() + ";" +
                         "-fx-font-family: 'Monospaced';" +
                         "-fx-font-size: 14px;"
         );
 
         areaLabel.setText("Area: " + square.computeArea());
+
         perimeterLabel.setText(
                 "Perimeter: " + square.computePerimeter()
         );
