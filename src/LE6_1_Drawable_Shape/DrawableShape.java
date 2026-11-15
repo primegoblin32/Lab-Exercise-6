@@ -31,4 +31,6 @@ public abstract class DrawableShape {
         centerX += dx;
         centerY += dy;
     }
+
+    public abstract String draw();
 }
