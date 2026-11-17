@@ -119,7 +119,11 @@ public class Main extends Application {
         stage.setMinHeight(500);
         stage.show();
 
-        updateDisplay();
+        javafx.application.Platform.runLater(this::updateDisplay);
+
+        drawingArea.heightProperty().addListener(
+                (obs, oldVal, newVal) -> updateDisplay()
+        );
     }
 
     private void drawSquare() {
@@ -152,10 +156,19 @@ public class Main extends Application {
         }
     }
 
+
     private void moveSquare() {
         try {
-            int dx = Integer.parseInt(dxField.getText());
-            int dy = Integer.parseInt(dyField.getText());
+            int dx = dxField.getText().isBlank()
+                    ? 0 : Integer.parseInt(dxField.getText());
+
+            int dy = dyField.getText().isBlank()
+                    ? 0 : Integer.parseInt(dyField.getText());
+
+            if (dxField.getText().isBlank() && dyField.getText().isBlank()) {
+                showError("Please enter at least one movement value.");
+                return;
+            }
 
             square.move(dx, dy);
 
@@ -165,9 +178,10 @@ public class Main extends Application {
             dyField.clear();
 
         } catch (NumberFormatException e) {
-            showError("Please enter valid DX and DY values.");
+            showError("Please enter valid integers for DX and DY.");
         }
     }
+
 
     private void resetSquare() {
         square = new Square(20, 12, "BLUE", 7);
@@ -218,8 +232,11 @@ public class Main extends Application {
         int leftPadding = Math.max(0,
                 (int) ((drawingArea.getWidth() / 8.4 - WIDTH * 2) / 2));
 
-        int topPadding = Math.max(0,
-                (int) ((drawingArea.getHeight() / 17 - HEIGHT) / 2));
+        int lineHeight = 17;
+
+        int visibleRows = (int) (drawingArea.getHeight() / lineHeight);
+
+        int topPadding = Math.max(0, (visibleRows - HEIGHT) / 2);
 
         output.append("\n".repeat(topPadding));
 
